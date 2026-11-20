@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light">
+  <title>Reloj de cuatro cuadros</title>
+
+  <style>
+    :root {
+      color-scheme: light;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      background: #ffffff;
+      color: #000000;
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    .widget {
+      width: min(100%, 540px);
+      margin: 0 auto;
+      padding: clamp(12px, 3.5vw, 24px);
+    }
+
+    .cuadricula {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: clamp(12px, 3.5vw, 26px);
+    }
+
+    .cuadro {
+      aspect-ratio: 1 / .94;
+      border: clamp(4px, 1.1vw, 9px) solid #000000;
+      border-radius: clamp(13px, 4vw, 25px);
+      background: #ffffff;
+
+      box-shadow: 7px 9px 12px rgba(0, 0, 0, .22);
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      gap: clamp(4px, 1.4vw, 12px);
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .cuadro.dia {
+      background: #000000;
+      color: #ffffff;
+    }
+
+    .valor {
+      font: 900 clamp(42px, 13vw, 96px)/1
+        Arial, Helvetica, sans-serif;
+
+      letter-spacing: -0.055em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .etiqueta {
+      font: 700 clamp(15px, 4.6vw, 31px)/1.15
+        Georgia, "Times New Roman", serif;
+
+      white-space: nowrap;
+    }
+
+    .periodo {
+      width: fit-content;
+      min-width: clamp(92px, 27vw, 154px);
+
+      margin: clamp(24px, 5vw, 36px) auto 0;
+      padding: 5px 24px 8px;
+
+      border-radius: 999px;
+      background: #000000;
+      color: #ffffff;
+
+      font: 900 clamp(24px, 8vw, 49px)/1
+        Arial, Helvetica, sans-serif;
+
+      text-align: center;
+
+      box-shadow: 6px 8px 11px rgba(0, 0, 0, .24);
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="widget"
+        role="timer"
+        aria-label="Fecha y hora actual">
+
+    <section class="cuadricula"
+             aria-label="Reloj en tiempo real">
+
+      <div class="cuadro dia">
+        <span class="valor" id="dia">--</span>
+        <span class="etiqueta">día</span>
+      </div>
+
+      <div class="cuadro">
+        <span class="valor" id="hora">--</span>
+        <span class="etiqueta">hora</span>
+      </div>
+
+      <div class="cuadro">
+        <span class="valor" id="minuto">--</span>
+        <span class="etiqueta">minuto</span>
+      </div>
+
+      <div class="cuadro">
+        <span class="valor" id="segundo">--</span>
+        <span class="etiqueta">segundo</span>
+      </div>
+
+    </section>
+
+    <div class="periodo"
+         id="periodo"
+         aria-label="AM o PM">--</div>
+
+  </main>
+
+  <script>
+    (() => {
+      const dia = document.getElementById('dia');
+      const hora = document.getElementById('hora');
+      const minuto = document.getElementById('minuto');
+      const segundo = document.getElementById('segundo');
+      const periodo = document.getElementById('periodo');
+
+      let temporizador;
+
+      function actualizar() {
+        // Fecha y hora locales del dispositivo.
+        const ahora = new Date();
+        const h24 = ahora.getHours();
+
+        // Día del mes: del 1 al 31.
+        dia.textContent = String(ahora.getDate());
+
+        // Hora en formato de 12 horas.
+        hora.textContent = String((h24 % 12) || 12);
+
+        // Minutos: 00 a 59.
+        minuto.textContent = String(
+          ahora.getMinutes()
+        ).padStart(2, '0');
+
+        // Segundos: 00 a 59.
+        segundo.textContent = String(
+          ahora.getSeconds()
+        ).padStart(2, '0');
+
+        // AM antes del mediodía, PM después.
+        periodo.textContent = h24 < 12 ? 'AM' : 'PM';
+      }
+
+      function iniciar() {
+        clearTimeout(temporizador);
+        actualizar();
+
+        // Sincronizar con el siguiente segundo.
+        temporizador = setTimeout(
+          iniciar,
+          1010 - new Date().getMilliseconds()
+        );
+      }
+
+      // Actualizar cuando se regrese a la pestaña.
+      document.addEventListener(
+        'visibilitychange',
+        () => {
+          if (!document.hidden) iniciar();
+        }
+      );
+
+      window.addEventListener('focus', iniciar);
+
+      iniciar();
+    })();
+  </script>
+
+</body>
+</html>
